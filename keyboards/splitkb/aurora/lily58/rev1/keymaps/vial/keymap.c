@@ -1,5 +1,5 @@
 #include QMK_KEYBOARD_H
-#include keymap_german.h
+#include "keymap_german.h"
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       [0] = LAYOUT(
