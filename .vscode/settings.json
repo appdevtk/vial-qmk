@@ -53,5 +53,11 @@
             "fileMatch": ["keymap.json"],
             "url": "./data/schemas/keymap.jsonschema"
         }
+    ],
+    "favorites.resources": [
+        {
+            "filePath": "keyboards\\splitkb\\aurora\\lily58",
+            "group": "Default"
+        }
     ]
 }
