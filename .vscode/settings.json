@@ -28,7 +28,11 @@
     "[json]": {
         "editor.formatOnSave": false
     },
-    "clangd.arguments": [
-        "--header-insertion=never"
+    "clangd.arguments": ["--header-insertion=never"],
+    "favorites.resources": [
+        {
+            "filePath": "keyboards\\splitkb\\aurora\\lily58",
+            "group": "Default"
+        }
     ]
 }
