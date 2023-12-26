@@ -26,6 +26,7 @@
 #define OLED_UPDATE_INTERVAL 50
 
 /* RGB */
+#define SPLIT_LAYER_STATE_ENABLE
 #define RGB_DISABLE_WHEN_USB_SUSPENDED // turn off effects when suspended
 
 #define RGB_MATRIX_FRAMEBUFFER_EFFECTS

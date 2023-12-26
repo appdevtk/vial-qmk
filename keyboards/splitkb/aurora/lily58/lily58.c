@@ -15,6 +15,7 @@
  */
 
 #include "quantum.h"
+#include "os_detection.h"
 
 // The first four layers gets a name for readability, which is then used in the OLED below.
 enum layers {
@@ -228,6 +229,34 @@ void render_layer_state(void) {
     }
 }
 
+void render_host(void) {
+    // https://www.reddit.com/r/programming/comments/111e1la/osdetection_with_qmk_keyboard/
+    switch (detected_host_os()) {
+        case OS_UNSURE:
+            oled_write_P(PSTR("OS: ?"), false);
+            break;
+        case OS_LINUX:
+            oled_write_P(PSTR("Linux"), false);
+            break;
+        case OS_WINDOWS:
+            oled_write_P(PSTR(" Win "), false);
+            break;
+        case OS_MACOS:
+            oled_write_P(PSTR("MacOS"), false);
+            break;
+        case OS_IOS:
+            oled_write_P(PSTR(" iOS "), false);
+            break;
+        default:
+            oled_write_P(PSTR("OS: -"), false);
+            break;
+    }
+}
+
+void render_kb_wpm(void) {
+    oled_write_P(PSTR(">"), false);
+    oled_write(get_u8_str(get_current_wpm(), ' '), false);
+}
 
 bool oled_task_kb(void) {
     if (!oled_task_user()) {
@@ -237,12 +266,13 @@ bool oled_task_kb(void) {
         // Renders the current keyboard state (layers and mods)
         render_logo();
         render_logo_text();
-        render_space();
+        render_host();
         render_layer_state();
         render_space();
         render_mod_status_gui_alt(get_mods()|get_oneshot_mods());
         render_mod_status_ctrl_shift(get_mods()|get_oneshot_mods());
         render_kb_LED_state();
+        render_kb_wpm();
     } else {
         // clang-format off
         static const char PROGMEM aurora_art[] = {
