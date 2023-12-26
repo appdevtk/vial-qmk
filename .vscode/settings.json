@@ -33,6 +33,18 @@
         {
             "filePath": "keyboards\\splitkb\\aurora\\lily58",
             "group": "Default"
+        },
+        {
+            "filePath": "keyboards\\splitkb\\kyria\\keymaps\\drashna",
+            "group": "Default"
+        },
+        {
+            "filePath": "users\\drashna",
+            "group": "Default"
+        },
+        {
+            "filePath": "quantum\\keycodes.h",
+            "group": "Default"
         }
     ]
 }
