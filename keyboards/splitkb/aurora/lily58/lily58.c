@@ -241,7 +241,7 @@ void render_layer_state(void) {
         case _RAISE_MAC:
         case _RAISE_WIN:
             oled_write_P(raise_layer, false);
-            break;()
+            break;
         case _ADJUST_1:
         case _ADJUST_2:
             oled_write_P(adjust_layer, false);
