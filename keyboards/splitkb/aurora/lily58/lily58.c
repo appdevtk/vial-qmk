@@ -19,10 +19,15 @@
 
 // The first four layers gets a name for readability, which is then used in the OLED below.
 enum layers {
-  _DEFAULT,
-  _LOWER,
-  _RAISE,
-  _ADJUST
+  _DEFAULT_MAC,
+  _DEFAULT_WIN,
+  _CODENGLISH,
+  _LOWER_MAC,
+  _LOWER_WIN,
+  _RAISE_MAC,
+  _RAISE_WIN,
+  _ADJUST_1,
+  _ADJUST_2
 };
 
 #ifdef OLED_ENABLE
@@ -33,8 +38,22 @@ oled_rotation_t oled_init_kb(oled_rotation_t rotation) {
     return OLED_ROTATION_270;
 }
 
-void render_space(void) {
-    oled_write_P(PSTR("     "), false);
+void render_active_layer(void) {
+    if (layer_state_is(_DEFAULT_MAC)) {
+        oled_write_P(PSTR("M"), false);
+    } else if (layer_state_is(_DEFAULT_WIN)) {
+        oled_write_P(PSTR("W"), false);
+    } else if (layer_state_is(_CODENGLISH)) {
+        oled_write_P(PSTR("C"), false);
+    }
+    oled_write_P(PSTR(" "), false);
+    if (layer_state_is(_LOWER_MAC) && layer_state_is(_LOWER_WIN)) {
+        oled_write_P(PSTR("LW"), false);
+    }
+    if (layer_state_is(_RAISE_MAC) && layer_state_is(_RAISE_WIN)) {
+        oled_write_P(PSTR("RW"), false);
+    }
+    oled_write_ln_P(PSTR(" "), false);
 }
 
 void render_mod_status_gui_alt(uint8_t modifiers) {
@@ -215,14 +234,20 @@ void render_layer_state(void) {
         0x20, 0xdd, 0xde, 0xdf, 0x20, 0};
 
     switch (get_highest_layer(layer_state | default_layer_state)) {
-        case _LOWER:
+        case _LOWER_MAC:
+        case _LOWER_WIN:
             oled_write_P(lower_layer, false);
             break;
-        case _RAISE:
+        case _RAISE_MAC:
+        case _RAISE_WIN:
             oled_write_P(raise_layer, false);
-            break;
-        case _ADJUST:
+            break;()
+        case _ADJUST_1:
+        case _ADJUST_2:
             oled_write_P(adjust_layer, false);
+            break;
+        case _CODENGLISH:
+            oled_write_P(default_layer, true);
             break;
         default:
             oled_write_P(default_layer, false);
@@ -268,7 +293,7 @@ bool oled_task_kb(void) {
         render_logo_text();
         render_host();
         render_layer_state();
-        render_space();
+        render_active_layer();
         render_mod_status_gui_alt(get_mods()|get_oneshot_mods());
         render_mod_status_ctrl_shift(get_mods()|get_oneshot_mods());
         render_kb_LED_state();
