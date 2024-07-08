@@ -39,21 +39,37 @@ oled_rotation_t oled_init_kb(oled_rotation_t rotation) {
 }
 
 void render_active_layer(void) {
-    if (layer_state_is(_DEFAULT_MAC)) {
-        oled_write_P(PSTR("M"), false);
-    } else if (layer_state_is(_DEFAULT_WIN)) {
-        oled_write_P(PSTR("W"), false);
-    } else if (layer_state_is(_CODENGLISH)) {
-        oled_write_P(PSTR("C"), false);
+    switch (get_highest_layer(layer_state | default_layer_state)) {
+        case _LOWER_MAC:
+            oled_write_P(PSTR("LM #3"), false);
+            break;
+        case _LOWER_WIN:
+            oled_write_P(PSTR("LW #4"), false);
+            break;
+        case _RAISE_MAC:
+            oled_write_P(PSTR("RM #5"), false);
+             break;
+        case _RAISE_WIN:
+            oled_write_P(PSTR("RW #6"), false);
+            break;
+        case _ADJUST_1:
+            oled_write_P(PSTR("A1 #7"), false);
+            break;
+        case _ADJUST_2:
+            oled_write_P(PSTR("A2 #8"), false);
+            break;
+        case _CODENGLISH:
+            oled_write_P(PSTR("C  #2"), false);
+            break;
+        case _DEFAULT_WIN:
+            oled_write_P(PSTR("W  #1"), false);
+            break;
+        case _DEFAULT_MAC:
+            oled_write_P(PSTR("M  #0"), false);
+            break;
+        default:
+            oled_write_P(PSTR("?  #?"), false);
     }
-    oled_write_P(PSTR(" "), false);
-    if (layer_state_is(_LOWER_MAC) && layer_state_is(_LOWER_WIN)) {
-        oled_write_P(PSTR("LW"), false);
-    }
-    if (layer_state_is(_RAISE_MAC) && layer_state_is(_RAISE_WIN)) {
-        oled_write_P(PSTR("RW"), false);
-    }
-    oled_write_ln_P(PSTR(" "), false);
 }
 
 void render_mod_status_gui_alt(uint8_t modifiers) {

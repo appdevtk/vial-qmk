@@ -123,13 +123,15 @@ void keyboard_post_init_user(void) {
     }
     return 0;
   }
-  defer_exec(500, get_host_os, NULL);
+  defer_exec(1000, get_host_os, NULL);
 }
 
 layer_state_t layer_state_set_user(layer_state_t state) {
+  state = state | default_layer_state;
+  state = update_tri_layer_state(state, _LOWER_MAC, _RAISE_MAC, _ADJUST_1);
   state = update_tri_layer_state(state, _DEFAULT_WIN, _LOWER_MAC, _LOWER_WIN);
   state = update_tri_layer_state(state, _DEFAULT_WIN, _RAISE_MAC, _RAISE_WIN);
-  return state;
+  return state & ~default_layer_state;
 }
 
 void rgb_matrix_layer_helper(uint8_t hue, uint8_t sat, uint8_t val, uint8_t mode, uint8_t speed, uint8_t led_type, uint8_t led_min, uint8_t led_max) {
