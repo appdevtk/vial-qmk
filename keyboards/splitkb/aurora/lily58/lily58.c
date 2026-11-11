@@ -15,19 +15,13 @@
  */
 
 #include "quantum.h"
-#include "os_detection.h"
 
 // The first four layers gets a name for readability, which is then used in the OLED below.
 enum layers {
-  _DEFAULT_MAC,
-  _DEFAULT_WIN,
-  _CODENGLISH,
-  _LOWER_MAC,
-  _LOWER_WIN,
-  _RAISE_MAC,
-  _RAISE_WIN,
-  _ADJUST_1,
-  _ADJUST_2
+  _DEFAULT,
+  _LOWER,
+  _RAISE,
+  _ADJUST
 };
 
 #ifdef OLED_ENABLE
@@ -38,38 +32,8 @@ oled_rotation_t oled_init_kb(oled_rotation_t rotation) {
     return OLED_ROTATION_270;
 }
 
-void render_active_layer(void) {
-    switch (get_highest_layer(layer_state | default_layer_state)) {
-        case _LOWER_MAC:
-            oled_write_P(PSTR("LM #3"), false);
-            break;
-        case _LOWER_WIN:
-            oled_write_P(PSTR("LW #4"), false);
-            break;
-        case _RAISE_MAC:
-            oled_write_P(PSTR("RM #5"), false);
-             break;
-        case _RAISE_WIN:
-            oled_write_P(PSTR("RW #6"), false);
-            break;
-        case _ADJUST_1:
-            oled_write_P(PSTR("A1 #7"), false);
-            break;
-        case _ADJUST_2:
-            oled_write_P(PSTR("A2 #8"), false);
-            break;
-        case _CODENGLISH:
-            oled_write_P(PSTR("C  #2"), false);
-            break;
-        case _DEFAULT_WIN:
-            oled_write_P(PSTR("W  #1"), false);
-            break;
-        case _DEFAULT_MAC:
-            oled_write_P(PSTR("M  #0"), false);
-            break;
-        default:
-            oled_write_P(PSTR("?  #?"), false);
-    }
+void render_space(void) {
+    oled_write_P(PSTR("     "), false);
 }
 
 void render_mod_status_gui_alt(uint8_t modifiers) {
@@ -250,54 +214,20 @@ void render_layer_state(void) {
         0x20, 0xdd, 0xde, 0xdf, 0x20, 0};
 
     switch (get_highest_layer(layer_state | default_layer_state)) {
-        case _LOWER_MAC:
-        case _LOWER_WIN:
+        case _LOWER:
             oled_write_P(lower_layer, false);
             break;
-        case _RAISE_MAC:
-        case _RAISE_WIN:
+        case _RAISE:
             oled_write_P(raise_layer, false);
             break;
-        case _ADJUST_1:
-        case _ADJUST_2:
+        case _ADJUST:
             oled_write_P(adjust_layer, false);
-            break;
-        case _CODENGLISH:
-            oled_write_P(default_layer, true);
             break;
         default:
             oled_write_P(default_layer, false);
     }
 }
 
-void render_host(void) {
-    // https://www.reddit.com/r/programming/comments/111e1la/osdetection_with_qmk_keyboard/
-    switch (detected_host_os()) {
-        case OS_UNSURE:
-            oled_write_P(PSTR("OS: ?"), false);
-            break;
-        case OS_LINUX:
-            oled_write_P(PSTR("Linux"), false);
-            break;
-        case OS_WINDOWS:
-            oled_write_P(PSTR(" Win "), false);
-            break;
-        case OS_MACOS:
-            oled_write_P(PSTR("MacOS"), false);
-            break;
-        case OS_IOS:
-            oled_write_P(PSTR(" iOS "), false);
-            break;
-        default:
-            oled_write_P(PSTR("OS: -"), false);
-            break;
-    }
-}
-
-void render_kb_wpm(void) {
-    oled_write_P(PSTR(">"), false);
-    oled_write(get_u8_str(get_current_wpm(), ' '), false);
-}
 
 bool oled_task_kb(void) {
     if (!oled_task_user()) {
@@ -307,13 +237,12 @@ bool oled_task_kb(void) {
         // Renders the current keyboard state (layers and mods)
         render_logo();
         render_logo_text();
-        render_host();
+        render_space();
         render_layer_state();
-        render_active_layer();
+        render_space();
         render_mod_status_gui_alt(get_mods()|get_oneshot_mods());
         render_mod_status_ctrl_shift(get_mods()|get_oneshot_mods());
         render_kb_LED_state();
-        render_kb_wpm();
     } else {
         // clang-format off
         static const char PROGMEM aurora_art[] = {

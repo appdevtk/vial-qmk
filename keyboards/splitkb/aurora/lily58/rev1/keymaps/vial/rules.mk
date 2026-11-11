@@ -29,3 +29,6 @@ CONVERT_TO = liatris
 # BOOTLOADER = caterina
 
 QMK_SETTINGS = no
+
+# Personal extensions are compiled only with this Vial keymap.
+SRC += oled.c rgb.c

@@ -84,3 +84,9 @@
 #define ENABLE_RGB_MATRIX_MULTISPLASH
 #define ENABLE_RGB_MATRIX_SOLID_SPLASH
 #define ENABLE_RGB_MATRIX_SOLID_MULTISPLASH
+
+/* Personal encoder detents; keep the shared keyboard definition unchanged. */
+#undef ENCODER_RESOLUTION
+#define ENCODER_RESOLUTION 2
+#undef ENCODER_RESOLUTION_RIGHT
+#define ENCODER_RESOLUTION_RIGHT 2
