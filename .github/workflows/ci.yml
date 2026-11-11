@@ -26,6 +26,8 @@ jobs:
       run: python3 util/ci_vial_verify_uid.py
 
   build-default:
+    # The personal fork builds its Lily58 below; upstream retains mass builds.
+    if: github.repository != 'appdevtk/vial-qmk'
     name: Build default keymaps for Vial
     runs-on: ubuntu-latest
     container: ghcr.io/qmk/qmk_cli@sha256:2dc05fc9f32efebd6b05c2b8676ee548358bc7e151e9dbf4dac6b6eed4513b07 
@@ -64,6 +66,7 @@ jobs:
         done
 
   build-vial:
+    if: github.repository != 'appdevtk/vial-qmk'
     name: Build Vial keymaps
     runs-on: ubuntu-latest
     container: ghcr.io/qmk/qmk_cli@sha256:2dc05fc9f32efebd6b05c2b8676ee548358bc7e151e9dbf4dac6b6eed4513b07 
@@ -100,3 +103,59 @@ jobs:
           printf '\n<details>\n<summary>%s</summary>\n\n```\n%s\n```\n\n</details>\n' \
             "${pretty_logname}" "$(sed "${REGEX_MAKE_OUTPUT} ; ${REGEX_ANSI_COLOR}" < "${log}")" >> "${GITHUB_STEP_SUMMARY}"
         done
+
+  personal-source-checks:
+    name: Check personal Lily58 behavior
+    if: github.repository == 'appdevtk/vial-qmk'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+    - name: Check layers and OS detection
+      run: python3 keyboards/splitkb/aurora/lily58/rev1/keymaps/vial/tests/check_keymap.py
+
+  personal-firmware:
+    name: Lily58 Liatris (${{ matrix.keymap }})
+    if: github.repository == 'appdevtk/vial-qmk'
+    needs: personal-source-checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 30
+    container: ghcr.io/qmk/qmk_cli@sha256:2dc05fc9f32efebd6b05c2b8676ee548358bc7e151e9dbf4dac6b6eed4513b07
+    strategy:
+      fail-fast: false
+      matrix:
+        keymap: [default, vial]
+    steps:
+    - name: Checkout with firmware dependencies
+      uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+        submodules: recursive
+    - name: Build firmware
+      env:
+        KEYMAP: ${{ matrix.keymap }}
+      run: |
+        git config --global --add safe.directory "$PWD"
+        make "splitkb/aurora/lily58/rev1:${KEYMAP}" CONVERT_TO=liatris
+    - name: Record build identity and checksums
+      env:
+        KEYMAP: ${{ matrix.keymap }}
+      run: |
+        sha256sum ./*.uf2 > SHA256SUMS
+        printf 'Commit: %s\nKeyboard: splitkb/aurora/lily58/rev1\nKeymap: %s\nConverter: liatris\n' "$GITHUB_SHA" "$KEYMAP" > firmware-build.txt
+    - name: Upload firmware
+      uses: actions/upload-artifact@v4
+      with:
+        name: lily58-liatris-${{ matrix.keymap }}-${{ github.sha }}
+        path: |
+          *.uf2
+          SHA256SUMS
+          firmware-build.txt
+        if-no-files-found: error
+        retention-days: 90
