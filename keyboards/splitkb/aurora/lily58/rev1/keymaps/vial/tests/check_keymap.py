@@ -51,6 +51,16 @@ typedef uint32_t layer_state_t;
 layer_state_t default_layer_state;
 """
     c += enum + "\n"
+    os_header = (ROOT / "quantum/os_detection.h").read_text()
+    c += re.search(r"typedef enum\s*\{.*?\} os_variant_t;", os_header, re.S).group() + "\n"
+    c += """
+static unsigned eeprom_writes;
+static void set_single_persistent_default_layer(uint8_t layer) {
+    default_layer_state = 1U << layer;
+    ++eeprom_writes;
+}
+"""
+    c += function(source, "process_detected_host_os_user") + "\n"
     c += function((ROOT / "quantum/action_layer.c").read_text(), "update_tri_layer_state") + "\n"
     c += function(source, "layer_state_set_user") + "\n"
     c += "static const int8_t thumbs[9][2] = {\n"
@@ -77,6 +87,27 @@ static layer_state_t expected(uint8_t held, bool windows) {
 }
 
 int main(void) {
+    const os_variant_t hosts[] = {OS_MACOS, OS_IOS, OS_WINDOWS, OS_LINUX};
+    for (unsigned i = 0; i < sizeof(hosts) / sizeof(hosts[0]); ++i) {
+        default_layer_state = 1U << _CODENGLISH;
+        eeprom_writes = 0;
+        assert(process_detected_host_os_user(hosts[i]));
+        assert(default_layer_state == (1U << (i < 2 ? _DEFAULT_MAC : _DEFAULT_WIN)));
+        assert(eeprom_writes == 1);
+        assert(process_detected_host_os_user(hosts[i]));
+        assert(eeprom_writes == 1);
+    }
+    default_layer_state = 1U << _CODENGLISH;
+    eeprom_writes = 0;
+    assert(process_detected_host_os_user(OS_UNSURE));
+    assert(default_layer_state == (1U << _CODENGLISH));
+    assert(eeprom_writes == 0);
+    assert(process_detected_host_os_user(OS_MACOS));
+    assert(process_detected_host_os_user(OS_WINDOWS));
+    assert(default_layer_state == (1U << _DEFAULT_WIN));
+    assert(eeprom_writes == 2);
+    puts("OS checks passed: 4 hosts, unknown host, repeated reports and Mac-to-Windows change.");
+
     unsigned scenarios = 0;
     for (uint8_t base = _DEFAULT_MAC; base <= _CODENGLISH; ++base) {
         default_layer_state = 1U << base;

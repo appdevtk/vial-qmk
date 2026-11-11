@@ -87,26 +87,28 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
 
 void keyboard_post_init_user(void) {
     keymap_rgb_post_init();
-    // Set default layer based on the detected OS after a 500 ms delay.
-  uint32_t get_host_os(uint32_t trigger_time, void* cb_arg) {
-    switch (detected_host_os()) {
-      case OS_UNSURE:  // Don't change default layer if unsure.
-        break;
-      case OS_MACOS:   // On Mac, set default layer to _DEFAULT_MAC.
-      case OS_IOS:
-        set_single_persistent_default_layer(_DEFAULT_MAC);
-        break;
-      case OS_WINDOWS:   // On Windows, set default layer to _DEFAULT_WIN.
-      case OS_LINUX:
-        set_single_persistent_default_layer(_DEFAULT_WIN);
-        break;
-      default:         // Else, set to _DEFAULT_MAC.
-        set_single_persistent_default_layer(_DEFAULT_MAC);
-        break;
+}
+
+bool process_detected_host_os_user(os_variant_t os) {
+    uint8_t base_layer;
+    switch (os) {
+        case OS_MACOS:
+        case OS_IOS:
+            base_layer = _DEFAULT_MAC;
+            break;
+        case OS_WINDOWS:
+        case OS_LINUX:
+            base_layer = _DEFAULT_WIN;
+            break;
+        default:
+            // Keep the selected base while the host is still unknown.
+            return true;
     }
-    return 0;
-  }
-  defer_exec(1000, get_host_os, NULL);
+
+    if (default_layer_state != ((layer_state_t)1 << base_layer)) {
+        set_single_persistent_default_layer(base_layer);
+    }
+    return true;
 }
 
 layer_state_t layer_state_set_user(layer_state_t state) {
