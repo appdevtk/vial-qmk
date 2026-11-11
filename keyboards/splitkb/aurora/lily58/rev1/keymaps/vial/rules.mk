@@ -27,7 +27,8 @@ CONVERT_TO = liatris
 # promicro
 # BOOTLOADER = caterina
 
-QMK_SETTINGS = no
+# Liatris has more space than the AVR board targeted by upstream's size cut.
+QMK_SETTINGS = yes
 
 # Personal extensions are compiled only with this Vial keymap.
 SRC += oled.c rgb.c
